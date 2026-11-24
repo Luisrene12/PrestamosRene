@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Control de préstamos</title>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-emerald-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans antialiased">
+<main class="max-w-2xl mx-auto px-4 py-6">
+  <section id="login" class="mt-16 rounded-2xl bg-white dark:bg-slate-900 shadow-lg p-6 ring-1 ring-slate-200 dark:ring-slate-800">
+    <h1 class="text-2xl font-bold mb-1">Control de préstamos</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Inicia sesión para ver tus clientes.</p>
+    <form id="login-form" class="space-y-3">
+      <label class="block text-xs font-medium text-slate-500 dark:text-slate-400">Usuario<input name="u" required autocomplete="username" class="inp"></label>
+      <label class="block text-xs font-medium text-slate-500 dark:text-slate-400">Contraseña<input name="p" type="password" required autocomplete="current-password" class="inp"></label>
+      <p id="login-error" hidden class="text-sm text-rose-600 dark:text-rose-400">Usuario o contraseña incorrectos.</p>
+      <button class="btn-p w-full">Entrar</button>
+    </form>
+  </section>
+
+  <section id="vista-lista" hidden>
+    <header class="mb-5 rounded-2xl bg-gradient-to-br from-emerald-700 to-teal-600 text-white p-5 shadow-lg">
+      <div class="flex items-start justify-between gap-3"><h1 class="text-2xl font-bold">Control de préstamos</h1><button id="salir" type="button" hidden class="text-sm rounded-lg bg-white/20 hover:bg-white/30 px-3 py-1">Cerrar sesión</button></div>
+      <p class="text-emerald-100 text-sm mt-1">Clientes, intereses mensuales y pagos anticipados.</p>
+      <div class="grid grid-cols-3 gap-2 mt-4 text-center" id="resumen"></div>
+    </header>
+    <div class="rounded-2xl bg-white dark:bg-slate-900 shadow p-5 mb-6 ring-1 ring-slate-200 dark:ring-slate-800">
+      <h2 id="t-form" class="font-semibold text-lg mb-3">Nuevo cliente</h2>
+      <form id="form" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <label class="sm:col-span-2 text-xs font-medium text-slate-500 dark:text-slate-400">Nombre del cliente<input name="nombre" required class="inp"></label>
+        <label class="text-xs font-medium text-slate-500 dark:text-slate-400">Teléfono<input name="telefono" type="tel" class="inp"></label>
+        <label class="text-xs font-medium text-slate-500 dark:text-slate-400">Cédula / ID<input name="doc" class="inp"></label>
+        <label class="text-xs font-medium text-slate-500 dark:text-slate-400">Monto prestado (Bs.)<input name="monto" type="number" min="1" step="0.01" required class="inp"></label>
+        <label class="text-xs font-medium text-slate-500 dark:text-slate-400">Interés mensual (%)<input name="tasa" type="number" min="0" step="0.01" required class="inp"></label>
+        <label class="sm:col-span-2 text-xs font-medium text-slate-500 dark:text-slate-400">Fecha del préstamo<input name="fecha" type="date" required class="inp"></label>
+        <button id="guardarBtn" class="sm:col-span-2 btn-p">Guardar cliente</button>
+        <button id="cancelar" type="button" hidden class="sm:col-span-2 btn-s">Cancelar edición</button>
+      </form>
+    </div>
+    <h2 class="font-semibold text-lg mb-3">Clientes</h2>
+    <div id="lista" class="space-y-3"></div>
+  </section>
+
+  <section id="vista-detalle" hidden>
+    <button id="volver" type="button" class="mb-4 text-emerald-700 dark:text-emerald-400 font-medium">← Volver a clientes</button>
+    <div class="rounded-2xl bg-white dark:bg-slate-900 shadow p-5 mb-5 ring-1 ring-slate-200 dark:ring-slate-800">
+      <div class="flex items-start justify-between gap-3">
+        <h1 id="d-nombre" class="text-2xl font-bold"></h1>
+        <div class="flex gap-4 text-sm font-medium"><button id="editar" type="button" class="text-emerald-700 dark:text-emerald-400">Editar</button><button id="borrar" type="button" class="text-rose-600 dark:text-rose-400">Eliminar</button></div>
+      </div>
+      <dl id="d-datos" class="grid grid-cols-2 gap-3 mt-4"></dl>
+    </div>
+    <div class="rounded-2xl bg-white dark:bg-slate-900 shadow p-5 ring-1 ring-slate-200 dark:ring-slate-800">
+      <h2 class="font-semibold text-lg mb-1">Intereses mensuales</h2>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Puedes registrar un pago antes de su vencimiento (pago anticipado) con la fecha y el monto reales.</p>
+      <div id="meses" class="space-y-2"></div>
+      <button id="mas" type="button" class="mt-3 w-full btn-s">Mostrar más meses por adelantado</button>
+    </div>
+  </section>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
