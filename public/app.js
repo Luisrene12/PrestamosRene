@@ -11,6 +11,9 @@ const vencidos=c=>{let n=0;while(dueISO(c,n+1)<=hoy())n++;return n};
 const atrasados=c=>{let a=0;for(let i=1;i<=vencidos(c);i++)if(!c.pagos[i])a++;return a};
 
 async function api(url,method="GET",body){
+  if(location.hostname.endsWith("github.io")){
+    throw new Error("GitHub Pages solo publica la pantalla. Falta alojar el servidor para poder iniciar sesión.");
+  }
   const r=await fetch(url,{method,credentials:"same-origin",headers:{"Content-Type":"application/json"},body:body?JSON.stringify(body):undefined});
   const data=await r.json().catch(()=>({}));
   if(r.status===401&&url!=="/api/login"){mostrarLogin()}
