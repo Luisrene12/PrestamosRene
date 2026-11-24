@@ -9,15 +9,48 @@
 </head>
 <body class="bg-emerald-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans antialiased">
 <main class="max-w-2xl mx-auto px-4 py-6">
-  <section id="login" class="mt-16 rounded-2xl bg-white dark:bg-slate-900 shadow-lg p-6 ring-1 ring-slate-200 dark:ring-slate-800">
-    <h1 class="text-2xl font-bold mb-1">Control de préstamos</h1>
-    <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Inicia sesión para ver tus clientes.</p>
-    <form id="login-form" class="space-y-3">
-      <label class="block text-xs font-medium text-slate-500 dark:text-slate-400">Usuario<input name="u" required autocomplete="username" class="inp"></label>
-      <label class="block text-xs font-medium text-slate-500 dark:text-slate-400">Contraseña<input name="p" type="password" required autocomplete="current-password" class="inp"></label>
-      <p id="login-error" hidden class="text-sm text-rose-600 dark:text-rose-400">Usuario o contraseña incorrectos.</p>
-      <button class="btn-p w-full">Entrar</button>
-    </form>
+  <section id="login" class="login-screen">
+    <div class="login-card">
+      <aside class="login-brand" aria-label="Información del sistema">
+        <div class="brand-mark">
+          <span class="brand-icon">₱</span>
+          <span>Prestamos</span>
+        </div>
+        <div class="brand-copy">
+          <p class="brand-kicker">Gestión financiera</p>
+          <h1>Control completo de tus préstamos</h1>
+          <p>Administra clientes, intereses y pagos desde un solo lugar.</p>
+        </div>
+        <div class="brand-status"><span></span> Sistema seguro</div>
+      </aside>
+
+      <div class="login-panel">
+        <div class="login-heading">
+          <p>Bienvenido</p>
+          <h2>Iniciar sesión</h2>
+          <span>Ingresa tus credenciales para continuar</span>
+        </div>
+        <form id="login-form" class="login-form">
+          <label for="login-user">Usuario
+            <div class="login-field">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21a8 8 0 0 0-16 0M12 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10Z"/></svg>
+              <input id="login-user" name="u" required autocomplete="username" placeholder="Ingresa tu usuario">
+            </div>
+          </label>
+          <label for="login-password">Contraseña
+            <div class="login-field">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10V7a5 5 0 0 1 10 0v3M5 10h14v11H5V10Zm7 4v3"/></svg>
+              <input id="login-password" name="p" type="password" required autocomplete="current-password" placeholder="Ingresa tu contraseña">
+            </div>
+          </label>
+          <p id="login-error" hidden>Usuario o contraseña incorrectos.</p>
+          <button type="submit" class="login-submit">Entrar al sistema
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </button>
+        </form>
+        <p class="login-footer">Acceso exclusivo para personal autorizado</p>
+      </div>
+    </div>
   </section>
 
   <section id="vista-lista" hidden>
