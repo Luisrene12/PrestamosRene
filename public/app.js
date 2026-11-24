@@ -12,11 +12,10 @@ const atrasados=c=>{let a=0;for(let i=1;i<=vencidos(c);i++)if(!c.pagos[i])a++;re
 
 async function api(url,method="GET",body){
   if(location.hostname.endsWith("github.io")){
-    throw new Error("GitHub Pages solo publica la pantalla. Falta alojar el servidor para poder iniciar sesión.");
+    throw new Error("GitHub Pages no ejecuta el servidor de datos. Abre la aplicación desde su servidor.");
   }
-  const r=await fetch(url,{method,credentials:"same-origin",headers:{"Content-Type":"application/json"},body:body?JSON.stringify(body):undefined});
+  const r=await fetch(url,{method,headers:{"Content-Type":"application/json"},body:body?JSON.stringify(body):undefined});
   const data=await r.json().catch(()=>({}));
-  if(r.status===401&&url!=="/api/login"){mostrarLogin()}
   if(!r.ok)throw new Error(data.error||"Error de conexión");
   return data;
 }
@@ -115,24 +114,13 @@ $("#borrar").onclick=()=>{
   });
 };
 
-async function entrar(){
-  await recargar();
-  $("#login").hidden=true;$("#vista-detalle").hidden=true;$("#vista-lista").hidden=false;$("#salir").hidden=false;
-  pintarLista();
-}
-function mostrarLogin(){
-  clientes=[];actual=null;finEdicion();
-  $("#vista-lista").hidden=true;$("#vista-detalle").hidden=true;$("#salir").hidden=true;$("#login").hidden=false;
-}
-$("#login-form").addEventListener("submit",async e=>{
-  e.preventDefault();const f=e.target;
+async function iniciar(){
   try{
-    await api("/api/login","POST",{usuario:f.u.value.trim(),password:f.p.value});
-    f.reset();$("#login-error").hidden=true;await entrar();
-  }catch(err){
-    $("#login-error").textContent=err.message;$("#login-error").hidden=false;
+    await recargar();
+    pintarLista();
+  }catch(e){
+    $("#lista").innerHTML=`<p class="text-center text-rose-600 py-6">${esc(e.message)}</p>`;
   }
-});
-$("#salir").onclick=async()=>{try{await api("/api/logout","POST")}catch(_){}mostrarLogin()};
+}
 
-api("/api/me").then(entrar).catch(()=>{});
+iniciar();

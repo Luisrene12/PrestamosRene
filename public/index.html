@@ -9,53 +9,9 @@
 </head>
 <body class="bg-emerald-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans antialiased">
 <main class="max-w-2xl mx-auto px-4 py-6">
-  <section id="login" class="login-screen">
-    <div class="login-card">
-      <aside class="login-brand" aria-label="Información del sistema">
-        <div class="brand-mark">
-          <span class="brand-icon">₱</span>
-          <span>Prestamos</span>
-        </div>
-        <div class="brand-copy">
-          <p class="brand-kicker">Gestión financiera</p>
-          <h1>Control completo de tus préstamos</h1>
-          <p>Administra clientes, intereses y pagos desde un solo lugar.</p>
-        </div>
-        <div class="brand-status"><span></span> Sistema seguro</div>
-      </aside>
-
-      <div class="login-panel">
-        <div class="login-heading">
-          <p>Bienvenido</p>
-          <h2>Iniciar sesión</h2>
-          <span>Ingresa tus credenciales para continuar</span>
-        </div>
-        <form id="login-form" class="login-form">
-          <label for="login-user">Usuario
-            <div class="login-field">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21a8 8 0 0 0-16 0M12 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10Z"/></svg>
-              <input id="login-user" name="u" required autocomplete="username" placeholder="Ingresa tu usuario">
-            </div>
-          </label>
-          <label for="login-password">Contraseña
-            <div class="login-field">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10V7a5 5 0 0 1 10 0v3M5 10h14v11H5V10Zm7 4v3"/></svg>
-              <input id="login-password" name="p" type="password" required autocomplete="current-password" placeholder="Ingresa tu contraseña">
-            </div>
-          </label>
-          <p id="login-error" hidden>Usuario o contraseña incorrectos.</p>
-          <button type="submit" class="login-submit">Entrar al sistema
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-          </button>
-        </form>
-        <p class="login-footer">Acceso exclusivo para personal autorizado</p>
-      </div>
-    </div>
-  </section>
-
-  <section id="vista-lista" hidden>
+  <section id="vista-lista">
     <header class="mb-5 rounded-2xl bg-gradient-to-br from-emerald-700 to-teal-600 text-white p-5 shadow-lg">
-      <div class="flex items-start justify-between gap-3"><h1 class="text-2xl font-bold">Control de préstamos</h1><button id="salir" type="button" hidden class="text-sm rounded-lg bg-white/20 hover:bg-white/30 px-3 py-1">Cerrar sesión</button></div>
+      <h1 class="text-2xl font-bold">Control de préstamos</h1>
       <p class="text-emerald-100 text-sm mt-1">Clientes, intereses mensuales y pagos anticipados.</p>
       <div class="grid grid-cols-3 gap-2 mt-4 text-center" id="resumen"></div>
     </header>
