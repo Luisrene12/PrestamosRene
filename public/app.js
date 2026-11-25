@@ -135,16 +135,20 @@ function pintarLista(){
   const tot=clientes.reduce((s,c)=>s+saldoCap(c),0),
         cob=clientes.reduce((s,c)=>s+Object.values(c.pagos).reduce((x,p)=>x+p.monto,0),0),
         at=clientes.filter(c=>atrasados(c)).length;
-  $("#resumen").innerHTML=[["Por cobrar",money(tot)],["Intereses cobrados",money(cob)],["Con atraso",at]].map(([k,v])=>`<div class="rounded-xl bg-white/15 py-2"><div class="text-[11px] text-emerald-100">${k}</div><div class="font-semibold text-sm">${esc(v)}</div></div>`).join("");
+  $("#resumen").innerHTML=[["Por cobrar",money(tot)],["Intereses",money(cob)],["Con atraso",at]].map(([k,v])=>`<div class="rounded-xl bg-white/15 px-1.5 py-2 backdrop-blur-sm ring-1 ring-white/15"><div class="text-[10px] sm:text-[11px] text-emerald-100 truncate">${k}</div><div class="font-bold text-xs sm:text-sm truncate">${esc(v)}</div></div>`).join("");
+  const q=($("#buscar")?.value||"").trim().toLowerCase();
+  const filtrados=q?clientes.filter(c=>(c.nombre+c.telefono+c.doc).toLowerCase().includes(q)):clientes;
+  $("#total-clientes").textContent=clientes.length?`${filtrados.length} de ${clientes.length}`:"";
+  if(!clientes.length)$("#box-form").hidden=false;
   const l=$("#lista");
-  if(!clientes.length){l.innerHTML='<p class="text-center text-slate-500 dark:text-slate-400 py-6">Aún no hay clientes. Agrega el primero arriba.</p>';return}
+  if(!filtrados.length){l.innerHTML=`<p class="text-center text-sm text-slate-500 dark:text-slate-400 py-8">${clientes.length?"No hay clientes que coincidan con tu búsqueda.":"Aún no hay clientes. Agrega el primero arriba."}</p>`;return}
   l.innerHTML="";
-  clientes.forEach(c=>{
+  filtrados.forEach(c=>{
     const a=atrasados(c), adv=Object.keys(c.pagos).filter(k=>k>vencidos(c)).length, sal=saldado(c);
     const b=document.createElement("button");b.type="button";
-    b.className="w-full text-left flex items-center justify-between gap-3 rounded-2xl bg-white dark:bg-slate-900 p-4 shadow ring-1 ring-slate-200 dark:ring-slate-800 hover:ring-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500";
-    b.innerHTML=`<div class="min-w-0"><div class="font-semibold truncate">${esc(c.nombre)}</div><div class="text-sm text-slate-500 dark:text-slate-400">${money(saldoCap(c))} pendiente (de ${money(c.monto)}) · ${c.tasa}%</div></div>
-    <span class="shrink-0 text-xs font-semibold rounded-full px-3 py-1 ${sal?"bg-teal-100 text-teal-800 dark:bg-teal-900/40 dark:text-teal-300":a?"bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300":"bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300"}">${sal?"Saldado":a?a+(a>1?" meses":" mes")+" sin pagar":(adv?"Al día + "+adv+" adelantado"+(adv>1?"s":""):"Al día")}</span>`;
+    b.className="w-full text-left flex items-center justify-between gap-2.5 rounded-2xl bg-white dark:bg-slate-900 p-3.5 sm:p-4 shadow-sm ring-1 ring-slate-200/90 dark:ring-slate-800 hover:ring-emerald-500 active:scale-[0.99] transition";
+    b.innerHTML=`<div class="min-w-0"><div class="font-bold text-sm sm:text-base truncate">${esc(c.nombre)}</div><div class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 truncate">${money(saldoCap(c))} pendiente · ${c.tasa}%</div></div>
+    <span class="shrink-0 text-[11px] sm:text-xs font-semibold rounded-full px-2.5 py-1 ${sal?"bg-teal-100 text-teal-800 dark:bg-teal-900/40 dark:text-teal-300":a?"bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300":"bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300"}">${sal?"Saldado":a?a+(a>1?" meses":" mes")+" sin pagar":(adv?"Al día + "+adv:"Al día")}</span>`;
     b.onclick=()=>{actual=c;extra=3;abierto=null;$("#form-cap").hidden=true;$("#vista-lista").hidden=true;$("#vista-detalle").hidden=false;pintarDetalle();scrollTo(0,0)};
     l.appendChild(b);
   });
@@ -193,7 +197,7 @@ function pintarDetalle(){
     const el=document.createElement("div");el.className=`rounded-xl p-3 ring-1 ${color}`;
     el.innerHTML=`<div class="flex flex-wrap items-center justify-between gap-2"><div><div class="font-medium">Mes ${i} · vence ${fmt(due)}</div><div class="text-xs text-slate-600 dark:text-slate-300">${estado}${p&&Math.abs(p.monto-interes(c))>0.005?" · "+money(p.monto):""}</div></div>
     <div class="flex flex-wrap gap-2">${p?'<button type="button" data-a="w" class="btn-p text-sm">PDF / WhatsApp</button><button type="button" data-a="e" class="btn-s text-sm">Editar</button><button type="button" data-a="d" class="btn-s text-sm">Deshacer</button>':'<button type="button" data-a="n" class="btn-p text-sm">Registrar pago</button>'}</div></div>
-    <form hidden class="mt-3 grid grid-cols-2 gap-2 items-end"><label class="text-xs text-slate-500 dark:text-slate-400">Fecha del pago<input type="date" name="f" required class="inp" value="${p?p.fecha:hoy()}"></label><label class="text-xs text-slate-500 dark:text-slate-400">Monto pagado<input type="number" name="m" step="0.01" min="0" required class="inp" value="${(p?p.monto:interes(c)).toFixed(2)}"></label><button type="submit" name="modo" value="guardar" class="btn-s">Guardar pago</button><button type="submit" name="modo" value="wa" class="btn-p">Guardar y enviar PDF</button></form>`;
+    <form hidden class="mt-3 grid grid-cols-2 gap-2 items-end"><label class="text-xs text-slate-500 dark:text-slate-400">Fecha del pago<input type="date" name="f" required class="inp" value="${p?p.fecha:hoy()}"></label><label class="text-xs text-slate-500 dark:text-slate-400">Monto pagado<input type="number" name="m" step="0.01" min="0" required class="inp" value="${(p?p.monto:interes(c)).toFixed(2)}"></label><button type="submit" name="modo" value="guardar" class="col-span-2 sm:col-span-1 btn-s">Guardar pago</button><button type="submit" name="modo" value="wa" class="col-span-2 sm:col-span-1 btn-p">Guardar y enviar PDF</button></form>`;
     const f=el.querySelector("form");
     if(abierto===i)f.hidden=false;
     el.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{
@@ -249,13 +253,16 @@ $("#form").addEventListener("submit",e=>{
     finEdicion();await recargar();pintarLista();
   });
 });
-function finEdicion(){editId=null;$("#form").reset();$("#t-form").textContent="Nuevo cliente";$("#guardarBtn").textContent="Guardar cliente";$("#cancelar").hidden=true}
+function finEdicion(){editId=null;$("#form").reset();$("#t-form").textContent="Nuevo cliente";$("#guardarBtn").textContent="Guardar cliente";$("#cancelar").hidden=true;$("#box-form").hidden=true}
+$("#btn-nuevo").onclick=()=>{finEdicion();$("#box-form").hidden=false;scrollTo(0,0)};
+$("#cerrar-form").onclick=finEdicion;
+$("#buscar").oninput=pintarLista;
 $("#cancelar").onclick=finEdicion;
 $("#editar").onclick=()=>{
   const c=actual,f=$("#form");editId=c.id;
   for(const k of ["nombre","telefono","doc","monto","tasa","fecha"])f[k].value=c[k];
   $("#t-form").textContent="Editar cliente";$("#guardarBtn").textContent="Actualizar cliente";$("#cancelar").hidden=false;
-  $("#volver").onclick();scrollTo(0,0);
+  $("#volver").onclick();$("#box-form").hidden=false;scrollTo(0,0);
 };
 $("#volver").onclick=()=>{$("#vista-detalle").hidden=true;$("#vista-lista").hidden=false;pintarLista()};
 $("#borrar").onclick=()=>{
