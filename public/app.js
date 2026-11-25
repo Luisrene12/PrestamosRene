@@ -50,36 +50,71 @@ async function enviarReciboPDF(c,info){
   if(!window.jspdf||!window.jspdf.jsPDF)throw new Error("No se pudo cargar el generador de PDF.");
   const {jsPDF}=window.jspdf;
   const doc=new jsPDF({unit:"mm",format:"a5"});
+
+  // Fondo y encabezado
   doc.setFillColor(4,120,87);
-  doc.rect(0,0,148,28,"F");
+  doc.rect(0,0,148,32,"F");
+  doc.setFillColor(16,185,129);
+  doc.rect(0,30,148,2,"F");
+
   doc.setTextColor(255,255,255);
   doc.setFont("helvetica","bold");
-  doc.setFontSize(16);
-  doc.text("COMPROBANTE DE PAGO",12,13);
+  doc.setFontSize(17);
+  doc.text("COMPROBANTE DE PAGO",12,14);
   doc.setFont("helvetica","normal");
-  doc.setFontSize(10);
-  doc.text("Control de Préstamos · PrestamosRene",12,21);
+  doc.setFontSize(9.5);
+  doc.setTextColor(209,250,229);
+  doc.text("Control de Préstamos · PrestamosRene",12,22);
 
-  doc.setTextColor(30,41,59);
-  let y=40;
-  const fila=(k,v)=>{
-    doc.setFont("helvetica","bold");doc.setFontSize(10);doc.text(k+":",12,y);
-    doc.setFont("helvetica","normal");doc.text(String(v),58,y);
-    y+=9;
-  };
-  fila("Cliente",c.nombre);
-  if(c.doc)fila("Cédula / ID",c.doc);
-  if(c.telefono)fila("Teléfono",c.telefono);
-  fila("Concepto",info.tipo);
-  fila("Fecha de pago",fmt(info.fecha));
-  fila("Monto pagado",money(info.monto));
-  if(info.detalle)fila("Detalle",info.detalle);
-  fila("Capital pendiente",money(saldoCap(c)));
+  // Etiqueta PAGADO
+  doc.setFillColor(236,253,245);
+  doc.roundedRect(111,10,25,9,2,2,"F");
+  doc.setTextColor(4,120,87);
+  doc.setFont("helvetica","bold");
+  doc.setFontSize(9);
+  doc.text("PAGADO",123.5,16,{align:"center"});
 
-  doc.setDrawColor(203,213,225);
-  doc.line(12,y+2,136,y+2);
-  doc.setFontSize(9);doc.setTextColor(100,116,139);
+  // Tarjeta destacada del monto
+  doc.setFillColor(240,253,244);
+  doc.setDrawColor(167,243,208);
+  doc.roundedRect(12,39,124,22,3,3,"FD");
+  doc.setTextColor(6,95,70);
+  doc.setFont("helvetica","bold");
+  doc.setFontSize(8.5);
+  doc.text("MONTO RECIBIDO",74,46,{align:"center"});
+  doc.setFontSize(18);
+  doc.setTextColor(4,120,87);
+  doc.text(money(info.monto),74,56,{align:"center"});
+
+  // Tabla de detalles
+  const filas=[
+    ["Cliente",c.nombre],
+    ...(c.doc?[["Cédula / ID",c.doc]]:[]),
+    ...(c.telefono?[["Teléfono",c.telefono]]:[]),
+    ["Concepto",info.tipo],
+    ["Fecha de pago",fmt(info.fecha)],
+    ...(info.detalle?[["Detalle",info.detalle]]:[]),
+    ["Capital pendiente",money(saldoCap(c))]
+  ];
+  let y=69;
+  filas.forEach(([k,v],idx)=>{
+    if(idx%2===0){
+      doc.setFillColor(248,250,252);
+      doc.rect(12,y-5.5,124,9,"F");
+    }
+    doc.setFont("helvetica","bold");doc.setFontSize(9.5);doc.setTextColor(71,85,105);
+    doc.text(k,15,y);
+    doc.setFont("helvetica","normal");doc.setTextColor(15,23,42);
+    doc.text(String(v),133,y,{align:"right"});
+    y+=9.5;
+  });
+
+  // Pie de página
+  doc.setDrawColor(226,232,240);
+  doc.line(12,y+3,136,y+3);
+  doc.setFontSize(8.5);doc.setTextColor(100,116,139);
   doc.text("Emitido el "+fmt(hoy()),12,y+10);
+  doc.text("Gracias por su pago",136,y+10,{align:"right"});
 
   const safe=c.nombre.replace(/[^a-zA-Z0-9_-]+/g,"_").slice(0,25)||"cliente";
   const nombreArchivo=`Recibo_${safe}_${info.sufijo}.pdf`;
