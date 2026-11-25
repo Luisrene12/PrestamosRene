@@ -10,18 +10,30 @@ const dueISO=(c,i)=>{const[y,m,d]=c.fecha.split("-").map(Number);const dt=new Da
 const vencidos=c=>{let n=0;while(dueISO(c,n+1)<=hoy())n++;return n};
 const atrasados=c=>{let a=0;for(let i=1;i<=vencidos(c);i++)if(!c.pagos[i])a++;return a};
 
-async function api(url,method="GET",body){
-  if(location.hostname.endsWith("github.io")){
-    throw new Error("GitHub Pages no ejecuta el servidor de datos. Abre la aplicación desde su servidor.");
+let sb=null;
+function getDB(){
+  if(sb)return sb;
+  const url=window.SUPABASE_URL||"", key=window.SUPABASE_ANON_KEY||"";
+  if(!url||!key||url.includes("TU-PROYECTO")||key.includes("TU-ANON-KEY")){
+    throw new Error("Falta configurar Supabase en public/config.js (SUPABASE_URL y SUPABASE_ANON_KEY).");
   }
-  const r=await fetch(url,{method,headers:{"Content-Type":"application/json"},body:body?JSON.stringify(body):undefined});
-  const data=await r.json().catch(()=>({}));
-  if(!r.ok)throw new Error(data.error||"Error de conexión");
-  return data;
+  if(!window.supabase)throw new Error("No se pudo cargar la librería de Supabase.");
+  sb=window.supabase.createClient(url,key);
+  return sb;
 }
+function checkErr(res){if(res.error)throw new Error(res.error.message||"Error en Supabase");return res.data}
 async function run(fn){try{await fn()}catch(e){alert(e.message)}}
 async function recargar(){
-  clientes=await api("/api/clientes");
+  const db=getDB();
+  const cs=checkErr(await db.from("clientes").select("id, nombre, telefono, doc, monto, tasa, fecha").order("id",{ascending:false}));
+  const ids=cs.map(c=>c.id);
+  const ps=ids.length?checkErr(await db.from("pagos").select("cliente_id, mes, fecha, monto").in("cliente_id",ids)):[];
+  const mapa=new Map(cs.map(c=>{
+    c.monto=Number(c.monto);c.tasa=Number(c.tasa);c.pagos={};
+    return [c.id,c];
+  }));
+  ps.forEach(p=>{const c=mapa.get(p.cliente_id);if(c)c.pagos[p.mes]={fecha:p.fecha,monto:Number(p.monto)}});
+  clientes=cs;
   if(actual)actual=clientes.find(c=>c.id===actual.id)||null;
 }
 
@@ -71,13 +83,13 @@ function pintarDetalle(){
     if(abierto===i)f.hidden=false;
     el.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{
       if(b.dataset.a==="d"){
-        if(confirm("¿Deshacer este pago?"))run(async()=>{await api(`/api/clientes/${c.id}/pagos/${i}`,"DELETE");await recargar();pintarDetalle()});
+        if(confirm("¿Deshacer este pago?"))run(async()=>{checkErr(await getDB().from("pagos").delete().eq("cliente_id",c.id).eq("mes",i));await recargar();pintarDetalle()});
       }else{abierto=abierto===i?null:i;f.hidden=!f.hidden}
     });
     f.onsubmit=e=>{
       e.preventDefault();
       run(async()=>{
-        await api(`/api/clientes/${c.id}/pagos/${i}`,"PUT",{fecha:f.f.value,monto:+f.m.value});
+        checkErr(await getDB().from("pagos").upsert({cliente_id:c.id,mes:i,fecha:f.f.value,monto:+f.m.value},{onConflict:"cliente_id,mes"}));
         abierto=null;await recargar();pintarDetalle();
       });
     };
@@ -92,8 +104,9 @@ $("#form").addEventListener("submit",e=>{
   const f=new FormData(e.target);
   const d={nombre:f.get("nombre").trim(),telefono:f.get("telefono").trim(),doc:f.get("doc").trim(),monto:+f.get("monto"),tasa:+f.get("tasa"),fecha:f.get("fecha")};
   run(async()=>{
-    if(editId)await api("/api/clientes/"+editId,"PUT",d);
-    else await api("/api/clientes","POST",d);
+    const db=getDB();
+    if(editId)checkErr(await db.from("clientes").update(d).eq("id",editId));
+    else checkErr(await db.from("clientes").insert(d));
     finEdicion();await recargar();pintarLista();
   });
 });
@@ -109,7 +122,7 @@ $("#volver").onclick=()=>{$("#vista-detalle").hidden=true;$("#vista-lista").hidd
 $("#borrar").onclick=()=>{
   if(!confirm("¿Eliminar a "+actual.nombre+" y todos sus pagos?"))return;
   run(async()=>{
-    await api("/api/clientes/"+actual.id,"DELETE");
+    checkErr(await getDB().from("clientes").delete().eq("id",actual.id));
     actual=null;await recargar();$("#volver").onclick();
   });
 };
