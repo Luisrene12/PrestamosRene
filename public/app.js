@@ -85,15 +85,15 @@ async function enviarReciboPDF(c,info){
   const nombreArchivo=`Recibo_${safe}_${info.sufijo}.pdf`;
   const resumen=`*Comprobante de pago*\nCliente: ${c.nombre}\nConcepto: ${info.tipo}\nFecha: ${fmt(info.fecha)}\nMonto: ${money(info.monto)}\nCapital pendiente: ${money(saldoCap(c))}`;
 
-  const blob=doc.output("blob");
-  const file=new File([blob],nombreArchivo,{type:"application/pdf"});
-  if(navigator.canShare&&navigator.canShare({files:[file]})){
-    try{await navigator.share({files:[file],title:"Comprobante de pago",text:resumen});return}
-    catch(e){if(e.name==="AbortError")return}
-  }
   doc.save(nombreArchivo);
   const tel=(c.telefono||"").replace(/\D/g,"");
-  window.open(`https://wa.me/${tel}?text=${encodeURIComponent(resumen)}`,"_blank");
+  if(!tel){
+    alert("Se descargó el PDF, pero el cliente no tiene teléfono registrado para abrir su WhatsApp directo.");
+    return;
+  }
+  const waUrl=`https://wa.me/${tel}?text=${encodeURIComponent(resumen)}`;
+  const win=window.open(waUrl,"_blank");
+  if(!win)window.location.href=waUrl;
 }
 
 function pintarLista(){
