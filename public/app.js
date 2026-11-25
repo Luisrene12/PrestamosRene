@@ -46,6 +46,56 @@ async function recargar(){
   if(actual)actual=clientes.find(c=>c.id===actual.id)||null;
 }
 
+async function enviarReciboPDF(c,info){
+  if(!window.jspdf||!window.jspdf.jsPDF)throw new Error("No se pudo cargar el generador de PDF.");
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({unit:"mm",format:"a5"});
+  doc.setFillColor(4,120,87);
+  doc.rect(0,0,148,28,"F");
+  doc.setTextColor(255,255,255);
+  doc.setFont("helvetica","bold");
+  doc.setFontSize(16);
+  doc.text("COMPROBANTE DE PAGO",12,13);
+  doc.setFont("helvetica","normal");
+  doc.setFontSize(10);
+  doc.text("Control de Préstamos · PrestamosRene",12,21);
+
+  doc.setTextColor(30,41,59);
+  let y=40;
+  const fila=(k,v)=>{
+    doc.setFont("helvetica","bold");doc.setFontSize(10);doc.text(k+":",12,y);
+    doc.setFont("helvetica","normal");doc.text(String(v),58,y);
+    y+=9;
+  };
+  fila("Cliente",c.nombre);
+  if(c.doc)fila("Cédula / ID",c.doc);
+  if(c.telefono)fila("Teléfono",c.telefono);
+  fila("Concepto",info.tipo);
+  fila("Fecha de pago",fmt(info.fecha));
+  fila("Monto pagado",money(info.monto));
+  if(info.detalle)fila("Detalle",info.detalle);
+  fila("Capital pendiente",money(saldoCap(c)));
+
+  doc.setDrawColor(203,213,225);
+  doc.line(12,y+2,136,y+2);
+  doc.setFontSize(9);doc.setTextColor(100,116,139);
+  doc.text("Emitido el "+fmt(hoy()),12,y+10);
+
+  const safe=c.nombre.replace(/[^a-zA-Z0-9_-]+/g,"_").slice(0,25)||"cliente";
+  const nombreArchivo=`Recibo_${safe}_${info.sufijo}.pdf`;
+  const resumen=`*Comprobante de pago*\nCliente: ${c.nombre}\nConcepto: ${info.tipo}\nFecha: ${fmt(info.fecha)}\nMonto: ${money(info.monto)}\nCapital pendiente: ${money(saldoCap(c))}`;
+
+  const blob=doc.output("blob");
+  const file=new File([blob],nombreArchivo,{type:"application/pdf"});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){
+    try{await navigator.share({files:[file],title:"Comprobante de pago",text:resumen});return}
+    catch(e){if(e.name==="AbortError")return}
+  }
+  doc.save(nombreArchivo);
+  const tel=(c.telefono||"").replace(/\D/g,"");
+  window.open(`https://wa.me/${tel}?text=${encodeURIComponent(resumen)}`,"_blank");
+}
+
 function pintarLista(){
   const tot=clientes.reduce((s,c)=>s+saldoCap(c),0),
         cob=clientes.reduce((s,c)=>s+Object.values(c.pagos).reduce((x,p)=>x+p.monto,0),0),
@@ -85,9 +135,10 @@ function pintarDetalle(){
   }
   c.capitales.forEach(k=>{
     const el=document.createElement("div");
-    el.className="flex items-center justify-between gap-2 rounded-xl p-3 bg-slate-50 dark:bg-slate-800/60 ring-1 ring-slate-200 dark:ring-slate-700";
-    el.innerHTML=`<div><div class="font-medium">${money(k.monto)}</div><div class="text-xs text-slate-500 dark:text-slate-400">Pagado el ${fmt(k.fecha)}</div></div><button type="button" class="btn-s text-sm">Deshacer</button>`;
-    el.querySelector("button").onclick=()=>{
+    el.className="flex flex-wrap items-center justify-between gap-2 rounded-xl p-3 bg-slate-50 dark:bg-slate-800/60 ring-1 ring-slate-200 dark:ring-slate-700";
+    el.innerHTML=`<div><div class="font-medium">${money(k.monto)}</div><div class="text-xs text-slate-500 dark:text-slate-400">Pagado el ${fmt(k.fecha)}</div></div><div class="flex gap-2"><button type="button" data-c="pdf" class="btn-s text-sm">PDF / WhatsApp</button><button type="button" data-c="del" class="btn-s text-sm">Deshacer</button></div>`;
+    el.querySelector('[data-c="pdf"]').onclick=()=>run(()=>enviarReciboPDF(c,{tipo:"Abono al Capital",fecha:k.fecha,monto:k.monto,detalle:`Capital restante: ${money(sc)}`,sufijo:"capital"}));
+    el.querySelector('[data-c="del"]').onclick=()=>{
       if(confirm("¿Deshacer este pago de capital?"))run(async()=>{checkErr(await getDB().from("abonos_capital").delete().eq("id",k.id));await recargar();pintarDetalle()});
     };
     boxCap.appendChild(el);
@@ -106,20 +157,25 @@ function pintarDetalle(){
     }
     const el=document.createElement("div");el.className=`rounded-xl p-3 ring-1 ${color}`;
     el.innerHTML=`<div class="flex flex-wrap items-center justify-between gap-2"><div><div class="font-medium">Mes ${i} · vence ${fmt(due)}</div><div class="text-xs text-slate-600 dark:text-slate-300">${estado}${p&&Math.abs(p.monto-interes(c))>0.005?" · "+money(p.monto):""}</div></div>
-    <div class="flex gap-2">${p?'<button type="button" data-a="e" class="btn-s text-sm">Editar</button><button type="button" data-a="d" class="btn-s text-sm">Deshacer</button>':'<button type="button" data-a="n" class="btn-p text-sm">Registrar pago</button>'}</div></div>
-    <form hidden class="mt-3 grid grid-cols-2 gap-2 items-end"><label class="text-xs text-slate-500 dark:text-slate-400">Fecha del pago<input type="date" name="f" required class="inp" value="${p?p.fecha:hoy()}"></label><label class="text-xs text-slate-500 dark:text-slate-400">Monto pagado<input type="number" name="m" step="0.01" min="0" required class="inp" value="${(p?p.monto:interes(c)).toFixed(2)}"></label><button class="btn-p col-span-2">Guardar pago</button></form>`;
+    <div class="flex flex-wrap gap-2">${p?'<button type="button" data-a="w" class="btn-p text-sm">PDF / WhatsApp</button><button type="button" data-a="e" class="btn-s text-sm">Editar</button><button type="button" data-a="d" class="btn-s text-sm">Deshacer</button>':'<button type="button" data-a="n" class="btn-p text-sm">Registrar pago</button>'}</div></div>
+    <form hidden class="mt-3 grid grid-cols-2 gap-2 items-end"><label class="text-xs text-slate-500 dark:text-slate-400">Fecha del pago<input type="date" name="f" required class="inp" value="${p?p.fecha:hoy()}"></label><label class="text-xs text-slate-500 dark:text-slate-400">Monto pagado<input type="number" name="m" step="0.01" min="0" required class="inp" value="${(p?p.monto:interes(c)).toFixed(2)}"></label><button type="submit" name="modo" value="guardar" class="btn-s">Guardar pago</button><button type="submit" name="modo" value="wa" class="btn-p">Guardar y enviar PDF</button></form>`;
     const f=el.querySelector("form");
     if(abierto===i)f.hidden=false;
     el.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{
       if(b.dataset.a==="d"){
         if(confirm("¿Deshacer este pago?"))run(async()=>{checkErr(await getDB().from("pagos").delete().eq("cliente_id",c.id).eq("mes",i));await recargar();pintarDetalle()});
+      }else if(b.dataset.a==="w"){
+        run(()=>enviarReciboPDF(c,{tipo:`Interés Mes ${i}`,fecha:p.fecha,monto:p.monto,detalle:`Vencimiento: ${fmt(due)}`,sufijo:`mes_${i}`}));
       }else{abierto=abierto===i?null:i;f.hidden=!f.hidden}
     });
     f.onsubmit=e=>{
       e.preventDefault();
+      const enviar=e.submitter&&e.submitter.value==="wa";
+      const fecha=f.f.value, monto=+f.m.value;
       run(async()=>{
-        checkErr(await getDB().from("pagos").upsert({cliente_id:c.id,mes:i,fecha:f.f.value,monto:+f.m.value},{onConflict:"cliente_id,mes"}));
+        checkErr(await getDB().from("pagos").upsert({cliente_id:c.id,mes:i,fecha,monto},{onConflict:"cliente_id,mes"}));
         abierto=null;await recargar();pintarDetalle();
+        if(enviar)await enviarReciboPDF(actual||c,{tipo:`Interés Mes ${i}`,fecha,monto,detalle:`Vencimiento: ${fmt(due)}`,sufijo:`mes_${i}`});
       });
     };
     box.appendChild(el);
