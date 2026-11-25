@@ -26,6 +26,84 @@ function getDB(){
 }
 function checkErr(res){if(res.error)throw new Error(res.error.message||"Error en Supabase");return res.data}
 async function run(fn){try{await fn()}catch(e){alert(e.message)}}
+
+/* ========== AUTH ========== */
+function mostrarLogin(){
+  $("#vista-login").hidden=false;
+  $("#app-main").hidden=true;
+}
+function mostrarApp(){
+  $("#vista-login").hidden=true;
+  $("#app-main").hidden=false;
+}
+
+let esRegistro=false;
+$("#registro-btn").onclick=()=>{
+  esRegistro=!esRegistro;
+  $("#login-titulo").textContent=esRegistro?"Crear cuenta":"Iniciar sesión";
+  $("#login-btn").textContent=esRegistro?"Registrarme":"Entrar";
+  $("#registro-btn").textContent=esRegistro?"Ya tengo cuenta":"Crear cuenta nueva";
+  $("#login-error").hidden=true;
+};
+
+$("#login-form").onsubmit=async e=>{
+  e.preventDefault();
+  const email=$("#login-email").value.trim(), pass=$("#login-pass").value;
+  const errEl=$("#login-error");
+  errEl.hidden=true;
+  $("#login-btn").disabled=true;
+  $("#login-btn").textContent="Cargando...";
+  try{
+    const db=getDB();
+    let res;
+    if(esRegistro){
+      res=await db.auth.signUp({email,password:pass});
+      if(res.error)throw new Error(res.error.message);
+      if(res.data.user&&!res.data.session){
+        errEl.textContent="Revisa tu correo para confirmar la cuenta.";
+        errEl.hidden=false;
+        return;
+      }
+    }else{
+      res=await db.auth.signInWithPassword({email,password:pass});
+      if(res.error)throw new Error(res.error.message);
+    }
+    mostrarApp();
+    await recargar();
+    pintarLista();
+  }catch(err){
+    errEl.textContent=err.message==="Invalid login credentials"?"Correo o contraseña incorrectos":err.message;
+    errEl.hidden=false;
+  }finally{
+    $("#login-btn").disabled=false;
+    $("#login-btn").textContent=esRegistro?"Registrarme":"Entrar";
+  }
+};
+
+$("#btn-logout").onclick=async()=>{
+  await getDB().auth.signOut();
+  clientes=[];actual=null;
+  mostrarLogin();
+};
+
+async function iniciar(){
+  try{
+    const db=getDB();
+    const {data:{session}}=await db.auth.getSession();
+    if(session){
+      mostrarApp();
+      await recargar();
+      pintarLista();
+    }else{
+      mostrarLogin();
+    }
+  }catch(e){
+    mostrarLogin();
+    $("#login-error").textContent=e.message;
+    $("#login-error").hidden=false;
+  }
+}
+/* ========== FIN AUTH ========== */
 async function recargar(){
   const db=getDB();
   const cs=checkErr(await db.from("clientes").select("id, nombre, telefono, doc, monto, tasa, fecha").order("id",{ascending:false}));
@@ -272,14 +350,5 @@ $("#borrar").onclick=()=>{
     actual=null;await recargar();$("#volver").onclick();
   });
 };
-
-async function iniciar(){
-  try{
-    await recargar();
-    pintarLista();
-  }catch(e){
-    $("#lista").innerHTML=`<p class="text-center text-rose-600 py-6">${esc(e.message)}</p>`;
-  }
-}
 
 iniciar();

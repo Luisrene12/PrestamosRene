@@ -31,22 +31,22 @@ CREATE TABLE IF NOT EXISTS abonos_capital (
 
 CREATE INDEX IF NOT EXISTS idx_abonos_capital_cliente ON abonos_capital(cliente_id);
 
--- Habilitar Row Level Security (RLS) y permitir acceso desde la app web
+-- Habilitar Row Level Security (RLS) y permitir acceso solo a usuarios autenticados
 ALTER TABLE clientes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE pagos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE abonos_capital ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Acceso publico clientes" ON clientes;
-CREATE POLICY "Acceso publico clientes" ON clientes
-  FOR ALL TO anon, authenticated
+CREATE POLICY "Acceso autenticado clientes" ON clientes
+  FOR ALL TO authenticated
   USING (true) WITH CHECK (true);
 
 DROP POLICY IF EXISTS "Acceso publico pagos" ON pagos;
-CREATE POLICY "Acceso publico pagos" ON pagos
-  FOR ALL TO anon, authenticated
+CREATE POLICY "Acceso autenticado pagos" ON pagos
+  FOR ALL TO authenticated
   USING (true) WITH CHECK (true);
 
 DROP POLICY IF EXISTS "Acceso publico abonos_capital" ON abonos_capital;
-CREATE POLICY "Acceso publico abonos_capital" ON abonos_capital
-  FOR ALL TO anon, authenticated
+CREATE POLICY "Acceso autenticado abonos_capital" ON abonos_capital
+  FOR ALL TO authenticated
   USING (true) WITH CHECK (true);

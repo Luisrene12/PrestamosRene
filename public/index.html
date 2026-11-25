@@ -11,14 +11,42 @@
 <link rel="stylesheet" href="styles.css">
 </head>
 <body class="min-h-screen bg-gradient-to-b from-emerald-50 via-teal-50/40 to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-slate-800 dark:text-slate-100 antialiased">
-<main class="max-w-2xl mx-auto px-3.5 sm:px-4 pt-4 pb-16">
+
+<!-- PANTALLA DE LOGIN -->
+<section id="vista-login" class="flex items-center justify-center min-h-screen px-4">
+  <div class="w-full max-w-sm">
+    <div class="text-center mb-6">
+      <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-700 shadow-lg shadow-emerald-900/20 mb-4">
+        <span class="text-3xl">💰</span>
+      </div>
+      <h1 class="text-2xl font-extrabold tracking-tight">PrestamosRene</h1>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Control de préstamos e intereses</p>
+    </div>
+    <div class="rounded-2xl bg-white/95 dark:bg-slate-900/95 shadow-lg shadow-slate-200/60 dark:shadow-none p-5 sm:p-6 ring-1 ring-slate-200/80 dark:ring-slate-800">
+      <h2 id="login-titulo" class="font-bold text-lg mb-4 text-center">Iniciar sesión</h2>
+      <form id="login-form" class="grid gap-3">
+        <label class="text-xs font-medium text-slate-500 dark:text-slate-400">Correo electrónico<input id="login-email" name="email" type="email" required class="inp" placeholder="tu@correo.com"></label>
+        <label class="text-xs font-medium text-slate-500 dark:text-slate-400">Contraseña<input id="login-pass" name="pass" type="password" required minlength="6" class="inp" placeholder="Mínimo 6 caracteres"></label>
+        <button type="submit" id="login-btn" class="btn-p">Entrar</button>
+        <button type="button" id="registro-btn" class="btn-s">Crear cuenta nueva</button>
+      </form>
+      <p id="login-error" class="text-xs text-rose-600 dark:text-rose-400 mt-3 text-center" hidden></p>
+    </div>
+  </div>
+</section>
+
+<!-- APP PRINCIPAL (oculta hasta login) -->
+<main id="app-main" class="max-w-2xl mx-auto px-3.5 sm:px-4 pt-4 pb-16" hidden>
   <section id="vista-lista">
     <header class="relative overflow-hidden mb-5 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-700 text-white p-4 sm:p-6 shadow-xl shadow-emerald-900/15">
       <div class="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-2xl"></div>
       <div class="relative">
         <div class="flex items-center justify-between gap-2">
           <span class="inline-block rounded-full bg-white/15 px-2.5 py-0.5 text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-emerald-50 ring-1 ring-white/20">PrestamosRene</span>
-          <button id="btn-nuevo" type="button" class="rounded-xl bg-white text-emerald-800 px-3 py-1.5 text-xs sm:text-sm font-bold shadow-sm hover:bg-emerald-50 active:scale-95 transition">+ Nuevo cliente</button>
+          <div class="flex gap-2">
+            <button id="btn-nuevo" type="button" class="rounded-xl bg-white text-emerald-800 px-3 py-1.5 text-xs sm:text-sm font-bold shadow-sm hover:bg-emerald-50 active:scale-95 transition">+ Nuevo</button>
+            <button id="btn-logout" type="button" class="rounded-xl bg-white/15 text-white px-2.5 py-1.5 text-xs font-semibold ring-1 ring-white/20 hover:bg-white/25 active:scale-95 transition" title="Cerrar sesión">Salir</button>
+          </div>
         </div>
         <h1 class="mt-2.5 text-xl sm:text-3xl font-extrabold tracking-tight">Control de préstamos</h1>
         <p class="text-emerald-100/90 text-xs sm:text-sm mt-0.5">Clientes, intereses mensuales, capital y comprobantes.</p>
