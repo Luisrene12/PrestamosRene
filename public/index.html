@@ -23,12 +23,11 @@
       <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Control de préstamos e intereses</p>
     </div>
     <div class="rounded-2xl bg-white/95 dark:bg-slate-900/95 shadow-lg shadow-slate-200/60 dark:shadow-none p-5 sm:p-6 ring-1 ring-slate-200/80 dark:ring-slate-800">
-      <h2 id="login-titulo" class="font-bold text-lg mb-4 text-center">Iniciar sesión</h2>
+      <h2 class="font-bold text-lg mb-4 text-center">Iniciar sesión</h2>
       <form id="login-form" class="grid gap-3">
-        <label class="text-xs font-medium text-slate-500 dark:text-slate-400">Correo electrónico<input id="login-email" name="email" type="email" required class="inp" placeholder="tu@correo.com"></label>
-        <label class="text-xs font-medium text-slate-500 dark:text-slate-400">Contraseña<input id="login-pass" name="pass" type="password" required minlength="6" class="inp" placeholder="Mínimo 6 caracteres"></label>
+        <label class="text-xs font-medium text-slate-500 dark:text-slate-400">Usuario<input id="login-user" name="user" type="text" required class="inp" autocomplete="username"></label>
+        <label class="text-xs font-medium text-slate-500 dark:text-slate-400">Contraseña<input id="login-pass" name="pass" type="password" required class="inp" autocomplete="current-password"></label>
         <button type="submit" id="login-btn" class="btn-p">Entrar</button>
-        <button type="button" id="registro-btn" class="btn-s">Crear cuenta nueva</button>
       </form>
       <p id="login-error" class="text-xs text-rose-600 dark:text-rose-400 mt-3 text-center" hidden></p>
     </div>

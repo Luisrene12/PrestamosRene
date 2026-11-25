@@ -37,60 +37,31 @@ function mostrarApp(){
   $("#app-main").hidden=false;
 }
 
-let esRegistro=false;
-$("#registro-btn").onclick=()=>{
-  esRegistro=!esRegistro;
-  $("#login-titulo").textContent=esRegistro?"Crear cuenta":"Iniciar sesión";
-  $("#login-btn").textContent=esRegistro?"Registrarme":"Entrar";
-  $("#registro-btn").textContent=esRegistro?"Ya tengo cuenta":"Crear cuenta nueva";
-  $("#login-error").hidden=true;
-};
-
 $("#login-form").onsubmit=async e=>{
   e.preventDefault();
-  const email=$("#login-email").value.trim(), pass=$("#login-pass").value;
+  const user=$("#login-user").value.trim(), pass=$("#login-pass").value;
   const errEl=$("#login-error");
   errEl.hidden=true;
-  $("#login-btn").disabled=true;
-  $("#login-btn").textContent="Cargando...";
-  try{
-    const db=getDB();
-    let res;
-    if(esRegistro){
-      res=await db.auth.signUp({email,password:pass});
-      if(res.error)throw new Error(res.error.message);
-      if(res.data.user&&!res.data.session){
-        errEl.textContent="Revisa tu correo para confirmar la cuenta.";
-        errEl.hidden=false;
-        return;
-      }
-    }else{
-      res=await db.auth.signInWithPassword({email,password:pass});
-      if(res.error)throw new Error(res.error.message);
-    }
+  if(user===window.APP_USER&&pass===window.APP_PASS){
+    sessionStorage.setItem("logueado","1");
     mostrarApp();
     await recargar();
     pintarLista();
-  }catch(err){
-    errEl.textContent=err.message==="Invalid login credentials"?"Correo o contraseña incorrectos":err.message;
+  }else{
+    errEl.textContent="Usuario o contraseña incorrectos";
     errEl.hidden=false;
-  }finally{
-    $("#login-btn").disabled=false;
-    $("#login-btn").textContent=esRegistro?"Registrarme":"Entrar";
   }
 };
 
-$("#btn-logout").onclick=async()=>{
-  await getDB().auth.signOut();
+$("#btn-logout").onclick=()=>{
+  sessionStorage.removeItem("logueado");
   clientes=[];actual=null;
   mostrarLogin();
 };
 
 async function iniciar(){
   try{
-    const db=getDB();
-    const {data:{session}}=await db.auth.getSession();
-    if(session){
+    if(sessionStorage.getItem("logueado")==="1"){
       mostrarApp();
       await recargar();
       pintarLista();
