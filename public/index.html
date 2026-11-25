@@ -41,6 +41,21 @@
       </div>
       <dl id="d-datos" class="grid grid-cols-2 gap-3 mt-4"></dl>
     </div>
+    <div class="rounded-2xl bg-white dark:bg-slate-900 shadow p-5 mb-5 ring-1 ring-slate-200 dark:ring-slate-800">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+        <div>
+          <h2 class="font-semibold text-lg">Pagos al capital</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Registra abonos parciales o el pago total del capital prestado.</p>
+        </div>
+        <button id="btn-cap" type="button" class="btn-p text-sm">Abonar capital</button>
+      </div>
+      <form id="form-cap" hidden class="mb-4 grid grid-cols-2 gap-2 items-end rounded-xl bg-slate-50 dark:bg-slate-800/60 p-3 ring-1 ring-slate-200 dark:ring-slate-700">
+        <label class="text-xs text-slate-500 dark:text-slate-400">Fecha del pago<input type="date" name="f" required class="inp"></label>
+        <label class="text-xs text-slate-500 dark:text-slate-400">Monto a pagar<input type="number" name="m" step="0.01" min="0.01" required class="inp"></label>
+        <button class="btn-p col-span-2">Guardar pago de capital</button>
+      </form>
+      <div id="capitales" class="space-y-2"></div>
+    </div>
     <div class="rounded-2xl bg-white dark:bg-slate-900 shadow p-5 ring-1 ring-slate-200 dark:ring-slate-800">
       <h2 class="font-semibold text-lg mb-1">Intereses mensuales</h2>
       <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Puedes registrar un pago antes de su vencimiento (pago anticipado) con la fecha y el monto reales.</p>
