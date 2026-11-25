@@ -169,6 +169,12 @@ async function enviarReciboPDF(c,info){
   const nombreArchivo=`Recibo_${safe}_${info.sufijo}.pdf`;
   const resumen=`*Comprobante de pago*\nCliente: ${c.nombre}\nConcepto: ${info.tipo}\nFecha: ${fmt(info.fecha)}\nMonto: ${money(info.monto)}\nCapital pendiente: ${money(saldoCap(c))}`;
 
+  const blob=doc.output("blob");
+  const file=new File([blob],nombreArchivo,{type:"application/pdf"});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){
+    try{await navigator.share({files:[file],title:"Comprobante de pago",text:resumen});return}
+    catch(e){if(e.name==="AbortError")return}
+  }
   doc.save(nombreArchivo);
   const tel=(c.telefono||"").replace(/\D/g,"");
   if(!tel){
